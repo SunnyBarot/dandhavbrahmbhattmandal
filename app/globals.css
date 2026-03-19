@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --color-primary: #2563eb;
+  --color-secondary: #059669;
+  --color-accent: #f59e0b;
+  --color-urgent: #dc2626;
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-urgent: var(--color-urgent);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
