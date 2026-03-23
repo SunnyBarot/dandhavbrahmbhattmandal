@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 export default function Footer() {
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Our Community";
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "શ્રી દંઢાવ બ્રહ્મભટ્ટ મંડળ";
   const year = new Date().getFullYear();
 
   return (
@@ -12,7 +12,7 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold text-white mb-4">{siteName}</h3>
             <p className="text-sm text-gray-400">
-              Building a stronger neighborhood together. Join our community and stay connected.
+              દંઢાવ પ્રદેશની એક માત્ર પ્રગતિવાંછુ સંસ્થા
             </p>
           </div>
 
@@ -39,11 +39,11 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span>+1 (555) 123-4567</span>
+                <span>+91 79 2674 9855</span>
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                <span>123 Community Lane</span>
+                <span>53/54, Azad Society, Ambavadi, Ambavadi, Ahmedabad, Gujarat 380015</span>
               </li>
             </ul>
           </div>

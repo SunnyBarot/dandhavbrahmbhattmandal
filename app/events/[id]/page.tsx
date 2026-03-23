@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
-import { Event } from "@/types";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import { formatDateTime } from "@/lib/utils";
 import { ArrowLeft, MapPin, Clock, Calendar } from "lucide-react";
+import { getEventById } from "@/lib/mockData"; // Import the function to get event by id.
+import { events } from "@/lib/mockData"; // Import the events data.
 
 const categoryVariant = {
   general: "blue" as const,
@@ -22,35 +22,13 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.from("events").select("title, description").eq("id", id).single();
-    if (data) {
-      return { title: data.title, description: data.description.slice(0, 160) };
-    }
-  } catch {}
   return { title: "Event" };
 }
 
 export default async function EventDetailPage({ params }: PageProps) {
   const { id } = await params;
-  let event: Event | null = null;
-
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("events")
-      .select("*")
-      .eq("id", id)
-      .eq("is_published", true)
-      .single();
-    event = data as Event;
-  } catch {
-    notFound();
-  }
-
+  const event = getEventById(events, id);
   if (!event) notFound();
-
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <Link
@@ -72,10 +50,6 @@ export default async function EventDetailPage({ params }: PageProps) {
           />
         </div>
       )}
-
-      <div className="mb-4">
-        <Badge variant={categoryVariant[event.category]}>{event.category}</Badge>
-      </div>
 
       <h1 className="text-3xl font-bold text-gray-900 mb-6">{event.title}</h1>
 

@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+/*import { NextResponse } from "next/server";
 import { registrationSchema } from "@/lib/validators/registration";
 
 export async function POST(request: Request) {
@@ -42,3 +41,4 @@ export async function POST(request: Request) {
     );
   }
 }
+*/

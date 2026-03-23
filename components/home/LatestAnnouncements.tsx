@@ -31,6 +31,7 @@ export default function LatestAnnouncements({ announcements }: { announcements: 
           <Link href="/announcements" className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1">
             View all <ArrowRight className="h-4 w-4" />
           </Link>
+          
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {announcements.map((a) => (

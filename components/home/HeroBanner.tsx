@@ -26,7 +26,7 @@ export default function HeroBanner() {
               href="/about"
               className="inline-flex items-center justify-center px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-lg hover:bg-white/10 transition-colors"
             >
-              Learn More
+              અમારા વિષે વધુ માહિતી જાણો... 
             </Link>
           </div>
         </div>

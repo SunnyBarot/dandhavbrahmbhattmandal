@@ -31,6 +31,7 @@ export interface Event {
   updated_at: string;
 }
 
+
 export interface Announcement {
   id: string;
   title: string;
