@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -14,19 +13,27 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // ✅ Mock Admin Credentials
+  const ADMIN_EMAIL = "admin@gmail.com";
+  const ADMIN_PASSWORD = "admin123";
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    // ⏳ Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    if (authError) {
+    // ✅ Mock validation
+    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
       setError("Invalid email or password.");
       setLoading(false);
       return;
     }
+
+    // ✅ Store login state (temporary)
+    localStorage.setItem("isAdminLoggedIn", "true");
 
     router.push("/admin");
     router.refresh();
@@ -40,11 +47,18 @@ export default function AdminLoginPage() {
             <Shield className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-          <p className="text-gray-600 text-sm mt-1">Sign in to manage the community site.</p>
+          <p className="text-gray-600 text-sm mt-1">
+            Sign in to manage the community site.
+          </p>
         </div>
 
         <form onSubmit={handleLogin} className="bg-white rounded-xl shadow-md p-6 space-y-4">
-          {error && <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
+          {error && (
+            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           <Input
             id="login-email"
             label="Email"
@@ -53,6 +67,7 @@ export default function AdminLoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
           <Input
             id="login-password"
             label="Password"
@@ -61,6 +76,7 @@ export default function AdminLoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
           <Button type="submit" loading={loading} className="w-full">
             Sign In
           </Button>

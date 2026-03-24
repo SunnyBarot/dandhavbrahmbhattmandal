@@ -80,7 +80,7 @@ export default async function EventDetailPage({ params }: PageProps) {
       </div>
 
       <div className="prose max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
-        {event.description}
+        {event.title} is an event that will take place at {event.location} on {formatDateTime(event.event_date)}. It is expected to have {event.attendees} attendees. We hope to see you there!
       </div>
     </div>
   );

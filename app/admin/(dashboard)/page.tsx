@@ -1,35 +1,84 @@
-import { createClient } from "@/lib/supabase/server";
 import { Users, Calendar, Megaphone, Mail } from "lucide-react";
+import { events, announcements } from "@/lib/mockData";
 
-async function getCount(tableName: string, filter?: Record<string, string | boolean>) {
-  try {
-    const supabase = await createClient();
-    let query = supabase.from(tableName).select("id", { count: "exact", head: true });
-    if (filter) {
-      for (const [key, value] of Object.entries(filter)) {
-        query = query.eq(key, value);
-      }
-    }
-    const { count } = await query;
-    return count || 0;
-  } catch {
-    return 0;
+// Mock extra data (you can later move this to mockData.ts)
+const contactMessages = [
+  { id: "1", is_read: false },
+  { id: "2", is_read: true },
+];
+
+const residents = [
+  { id: "1", status: "pending" },
+  { id: "2", status: "approved" },
+  { id: "3", status: "pending" },
+];
+
+// Generic count function using mock data
+function getCount(
+  tableName: string,
+  filter?: Record<string, string | boolean>
+) {
+  let data: any[] = [];
+
+  switch (tableName) {
+    case "residents":
+      data = residents;
+      break;
+    case "events":
+      data = events;
+      break;
+    case "announcements":
+      data = announcements;
+      break;
+    case "contact_messages":
+      data = contactMessages;
+      break;
+    default:
+      data = [];
   }
+
+  if (filter) {
+    data = data.filter((item) =>
+      Object.entries(filter).every(
+        ([key, value]) => item[key] === value
+      )
+    );
+  }
+
+  return data.length;
 }
 
-export default async function AdminDashboard() {
-  const [pendingMembers, upcomingEvents, totalAnnouncements, unreadMessages] = await Promise.all([
-    getCount("residents", { status: "pending" }),
-    getCount("events", { is_published: true }),
-    getCount("announcements", { is_published: true }),
-    getCount("contact_messages", { is_read: false }),
-  ]);
+export default function AdminDashboard() {
+  const pendingMembers = getCount("residents", { status: "pending" });
+  const upcomingEvents = getCount("events"); // no filter in mock
+  const totalAnnouncements = getCount("announcements");
+  const unreadMessages = getCount("contact_messages", { is_read: false });
 
   const stats = [
-    { label: "Pending Registrations", value: pendingMembers, icon: Users, color: "bg-amber-50 text-amber-600" },
-    { label: "Published Events", value: upcomingEvents, icon: Calendar, color: "bg-blue-50 text-blue-600" },
-    { label: "Announcements", value: totalAnnouncements, icon: Megaphone, color: "bg-emerald-50 text-emerald-600" },
-    { label: "Unread Messages", value: unreadMessages, icon: Mail, color: "bg-red-50 text-red-600" },
+    {
+      label: "Pending Registrations",
+      value: pendingMembers,
+      icon: Users,
+      color: "bg-amber-50 text-amber-600",
+    },
+    {
+      label: "Published Events",
+      value: upcomingEvents,
+      icon: Calendar,
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      label: "Announcements",
+      value: totalAnnouncements,
+      icon: Megaphone,
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      label: "Unread Messages",
+      value: unreadMessages,
+      icon: Mail,
+      color: "bg-red-50 text-red-600",
+    },
   ];
 
   return (
@@ -45,7 +94,9 @@ export default async function AdminDashboard() {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stat.value}
+                  </p>
                   <p className="text-sm text-gray-500">{stat.label}</p>
                 </div>
               </div>

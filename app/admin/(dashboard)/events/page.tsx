@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Event } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Badge from "@/components/ui/Badge";
@@ -40,16 +39,24 @@ export default function AdminEventsPage() {
   const [form, setForm] = useState(emptyEvent);
   const [saving, setSaving] = useState(false);
 
-  const supabase = createClient();
-
-  const fetchEvents = async () => {
+  // ✅ Load from localStorage
+  const fetchEvents = () => {
     setLoading(true);
-    const { data } = await supabase.from("events").select("*").order("event_date", { ascending: false });
-    setEvents((data as Event[]) || []);
+    const stored = localStorage.getItem("events");
+    const data: Event[] = stored ? JSON.parse(stored) : [];
+    setEvents(data);
     setLoading(false);
   };
 
-  useEffect(() => { fetchEvents(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  // ✅ Save to localStorage
+  const saveToStorage = (data: Event[]) => {
+    localStorage.setItem("events", JSON.stringify(data));
+    setEvents(data);
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -72,40 +79,65 @@ export default function AdminEventsPage() {
     setModalOpen(true);
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     setSaving(true);
-    const payload = {
-      ...form,
-      end_date: form.end_date || null,
-      image_url: form.image_url || null,
-    };
+
+    let updatedList: Event[] = [];
 
     if (editing) {
-      await supabase.from("events").update(payload).eq("id", editing.id);
+      // ✅ Update
+      updatedList = events.map((e) =>
+        e.id === editing.id
+          ? {
+              ...e,
+              ...form,
+              end_date: form.end_date || null,
+              image_url: form.image_url || null,
+            }
+          : e
+      );
     } else {
-      await supabase.from("events").insert(payload);
+      // ✅ Create
+      const newEvent: Event = {
+        id: Date.now().toString(),
+        ...form,
+        end_date: form.end_date || null,
+        image_url: form.image_url || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        created_by: "admin",
+      };
+
+      updatedList = [newEvent, ...events];
     }
+
+    saveToStorage(updatedList);
+
     setModalOpen(false);
     setSaving(false);
-    fetchEvents();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return;
-    await supabase.from("events").delete().eq("id", id);
-    fetchEvents();
+
+    const updatedList = events.filter((e) => e.id !== id);
+    saveToStorage(updatedList);
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Manage Events</h1>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> New Event</Button>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4 mr-2" /> New Event
+        </Button>
       </div>
 
       {loading ? (
         <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-200 rounded-lg" />)}
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-16 bg-gray-200 rounded-lg" />
+          ))}
         </div>
       ) : events.length === 0 ? (
         <p className="text-gray-500 text-center py-8">No events yet.</p>
@@ -115,26 +147,41 @@ export default function AdminEventsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Title</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Date</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Category</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Published</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Actions</th>
+                  <th className="px-4 py-3 text-left">Title</th>
+                  <th className="px-4 py-3 text-left">Date</th>
+                  <th className="px-4 py-3 text-left">Category</th>
+                  <th className="px-4 py-3 text-left">Published</th>
+                  <th className="px-4 py-3 text-left">Actions</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y">
                 {events.map((e) => (
                   <tr key={e.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium">{e.title}</td>
-                    <td className="px-4 py-3 text-gray-600">{formatDate(e.event_date)}</td>
-                    <td className="px-4 py-3"><Badge>{e.category}</Badge></td>
-                    <td className="px-4 py-3">{e.is_published ? "Yes" : "No"}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {formatDate(e.event_date)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge>{e.category}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      {e.is_published ? "Yes" : "No"}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => openEdit(e)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEdit(e)}
+                        >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button size="sm" variant="danger" onClick={() => handleDelete(e.id)}>
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => handleDelete(e.id)}
+                        >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -147,45 +194,88 @@ export default function AdminEventsPage() {
         </div>
       )}
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? "Edit Event" : "New Event"}>
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editing ? "Edit Event" : "New Event"}
+      >
         <div className="space-y-4">
-          <Input id="event-title" label="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              rows={4}
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+          <Input
+            id="event-title"
+            label="Title"
+            value={form.title}
+            onChange={(e) =>
+              setForm({ ...form, title: e.target.value })
+            }
+          />
+
+          <textarea
+            className="w-full border rounded-lg p-2"
+            rows={4}
+            value={form.description}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              type="datetime-local"
+              value={form.event_date}
+              onChange={(e) =>
+                setForm({ ...form, event_date: e.target.value })
+              }
+            />
+            <Input
+              type="datetime-local"
+              value={form.end_date}
+              onChange={(e) =>
+                setForm({ ...form, end_date: e.target.value })
+              }
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Input id="event-date" label="Start Date" type="datetime-local" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
-            <Input id="event-end" label="End Date" type="datetime-local" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
-          </div>
-          <Input id="event-location" label="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-          <Input id="event-image" label="Image URL" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value as Event["category"] })}
-            >
-              {["general", "meeting", "festival", "maintenance", "social"].map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
+
+          <Input
+            label="Location"
+            value={form.location}
+            onChange={(e) =>
+              setForm({ ...form, location: e.target.value })
+            }
+          />
+
+          <Input
+            label="Image URL"
+            value={form.image_url}
+            onChange={(e) =>
+              setForm({ ...form, image_url: e.target.value })
+            }
+          />
+
+          <select
+            value={form.category}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                category: e.target.value as Event["category"],
+              })
+            }
+          >
+            {["general", "meeting", "festival", "maintenance", "social"].map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               checked={form.is_published}
-              onChange={(e) => setForm({ ...form, is_published: e.target.checked })}
-              className="rounded border-gray-300"
+              onChange={(e) =>
+                setForm({ ...form, is_published: e.target.checked })
+              }
             />
             Published
           </label>
+
           <Button onClick={handleSave} loading={saving} className="w-full">
             {editing ? "Update Event" : "Create Event"}
           </Button>
