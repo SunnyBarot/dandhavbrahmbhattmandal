@@ -16,7 +16,7 @@ const navLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "દંઢાવ બ્રહ્મભટ્ટ મંડળ";
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "શ્રી દંઢાવ બ્રહ્મભટ્ટ મંડળ";
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">

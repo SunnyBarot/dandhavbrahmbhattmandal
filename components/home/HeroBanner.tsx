@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export default function HeroBanner() {
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "દંઢાવ બ્રહ્મભટ્ટ મંડળ";
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "શ્રી દંઢાવ બ્રહ્મભટ્ટ મંડળ, અમદાવાદ";
 
   return (
     <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white">
@@ -13,7 +13,7 @@ export default function HeroBanner() {
           </h1>
           <p className="mt-6 text-lg md:text-xl text-orange-100 leading-relaxed">
             દંઢાવ પ્રદેશની એક માત્ર પ્રગતિવાંછુ સંસ્થા<br/>
-            &nbsp;&nbsp;&nbsp;&nbsp; શ્રી દંઢાવ બ્રહ્મભટ્ટ મંડળ
+            &nbsp;&nbsp;&nbsp;&nbsp; શ્રી દંઢાવ બ્રહ્મભટ્ટ મંડળ, અમદાવાદ
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
             <Link
